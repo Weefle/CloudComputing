@@ -1,11 +1,6 @@
 package server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 import data.DataFile;
@@ -134,10 +129,11 @@ public class ServerHandler extends Thread {
 
 	void readFile(Object obj) throws Exception {
 		DataFile dtf = (DataFile) obj;
-		currentSize += 512;
+		//currentSize += 512;
 
-		int percent = (int) (currentSize * 100 / fileSize);
-		m_dtf.appendByte(dtf.data);
+		int percent = (int) (fileSize);
+		m_dtf.data = dtf.data;
+		//m_dtf.appendByte(dtf.data);
 		iSocketServerListener.showProgessBarPercent(percent);
 	}
 
@@ -152,13 +148,18 @@ public class ServerHandler extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (sendType != SEND_TYPE.DO_NOT_SEND)
-					sendData();
+				if (sendType != SEND_TYPE.DO_NOT_SEND) {
+					try {
+						sendData();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 
-	private void sendData() {
+	private void sendData() throws IOException {
 		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
@@ -179,7 +180,17 @@ public class ServerHandler extends Thread {
 
 		} else if (sendType == SEND_TYPE.START_SEND_FILE) {
 			File source = new File(FileWorker.URL_FOLDER + "\\" + fileName);
-			InputStream fin = null;
+			var myFile = new File(fileName);
+
+			long lenghtOfFile = myFile.length();
+			var fileInputStream = new FileInputStream(myFile);
+
+			DataFile dtf = new DataFile();
+			dtf.data = fileInputStream.readAllBytes();
+			sendMessage(dtf);
+			iSocketServerListener.showProgessBarPercent((int) (lenghtOfFile));
+			fileInputStream.close();
+			/*InputStream fin = null;
 			long lenghtOfFile = source.length();
 			// Send file : file data
 			byte[] buf = new byte[512];
@@ -199,7 +210,7 @@ public class ServerHandler extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			// Send End File: fileName + size
 			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);
 

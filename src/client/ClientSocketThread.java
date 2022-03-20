@@ -2,6 +2,8 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 import data.DataFile;
@@ -61,7 +63,6 @@ public class ClientSocketThread extends Thread {
 		while (!isStop) {
 			try {
 				readData();
-				//sendString("VIEW_ALL_FILE");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				connectServerFail();
@@ -120,12 +121,13 @@ public class ClientSocketThread extends Thread {
 
 	void readFile(Object obj) throws Exception {
 		DataFile dtf = (DataFile) obj;
-		currentSize += 512;
+		//currentSize += 512;
 
-		int percent = (int) (currentSize * 100 / fileSize);
-		// System.out.println(currentSize + " : " + fileSize);
-		m_dtf.appendByte(dtf.data);
+		int percent = (int) (fileSize);
+		m_dtf.data = dtf.data;
 		iSocketListener.setProgress(percent);
+
+
 	}
 
 	class SendDataThread extends Thread {
@@ -139,13 +141,18 @@ public class ClientSocketThread extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (sendType != SEND_TYPE.DO_NOT_SEND)
-					sendData();
+				if (sendType != SEND_TYPE.DO_NOT_SEND) {
+					try {
+						sendData();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 
-	private void sendData() {
+	private void sendData() throws IOException {
 		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
@@ -164,7 +171,18 @@ public class ClientSocketThread extends Thread {
 				e.printStackTrace();
 			}
 		} else if (sendType == SEND_TYPE.START_SEND_FILE) {
-			File source = new File(fileName);
+			var myFile = new File(fileName);
+
+			long lenghtOfFile = myFile.length();
+			var fileInputStream = new FileInputStream(myFile);
+
+			DataFile dtf = new DataFile();
+			dtf.data = fileInputStream.readAllBytes();
+			sendMessage(dtf);
+			iSocketListener.setProgress((int) (lenghtOfFile));
+			fileInputStream.close();
+
+			/*File source = new File(fileName);
 			InputStream fin = null;
 			long lenghtOfFile = source.length();
 			// Send file : file data
@@ -183,7 +201,7 @@ public class ClientSocketThread extends Thread {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			// Send End File: fileName + size
 			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);
 
