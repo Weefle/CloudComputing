@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -139,7 +140,6 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		} else if (e.getSource() == downLoadFile) {
 			if (list.getSelectedIndex() != -1) {
 				String str = list.getSelectedValue();
-				List<String> lists = list.getSelectedValuesList();
 				clientSocketThread.sendString("DOWNLOAD_FILE" + "--" + str);
 			}
 		} else if (e.getSource() == uploadFileButton) {
@@ -174,7 +174,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	}
 
 	@Override
-	public String chooserFileToSave(DataFile dataFile) {
+	public void chooserFileToSave(DataFile dataFile) {
 		JFileChooser fileChooser = new JFileChooser();
 		int returnVal = fileChooser.showOpenDialog(this);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -187,7 +187,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 				JOptionPane.showMessageDialog(null, e);
 			}
 		}
-		return null;
+
 	}
 
 }

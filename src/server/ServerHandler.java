@@ -196,6 +196,7 @@ public class ServerHandler extends Thread {
 					// iSocketServerListener.showDialog("File send " + total * 100 / lenghtOfFile,
 					// "INFOR");
 				}
+
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -205,6 +206,13 @@ public class ServerHandler extends Thread {
 
 		}
 		sendType = SEND_TYPE.DO_NOT_SEND;
+		String[] files = fileWorker.getAllFileName();
+		String data = "ALL_FILE";
+		for (String file : files) {
+			data += "--" + file;
+		}
+		this.sendString(data);
+		//sendMessage(data);
 	}
 
 	void sendString(String str) {

@@ -3,6 +3,7 @@ package client;
 import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Objects;
 
 import data.DataFile;
 import data.SEND_TYPE;
@@ -28,6 +29,7 @@ public class ClientSocketThread extends Thread {
 	private String fileNameReceived;
 	private long currentSize;
 	DataFile m_dtf;
+	String[] currentArray;
 
 	public ClientSocketThread(ISocketListener iSocketListener) throws Exception {
 		this.iSocketListener = iSocketListener;
@@ -110,8 +112,12 @@ public class ClientSocketThread extends Thread {
 			iSocketListener.chooserFileToSave(m_dtf);
 		} else if (str.contains("ALL_FILE")) {
 			String[] listFile = str.split("--");
-			String[] yourArray = Arrays.copyOfRange(listFile, 1, listFile.length);
-			iSocketListener.updateListFile(yourArray);
+			var newArray = Arrays.copyOfRange(listFile, 1, listFile.length);
+			if(!Arrays.equals(currentArray, newArray)){
+				currentArray = newArray;
+				iSocketListener.updateListFile(currentArray);
+			}
+
 		} else if (str.contains("ERROR")) {
 			String[] list = str.split("--");
 			iSocketListener.showDialog(list[1], "ERROR");

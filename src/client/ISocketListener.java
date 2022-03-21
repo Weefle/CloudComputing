@@ -10,6 +10,6 @@ public interface ISocketListener {
 
 	void showDialog(String str, String type);
 
-	String chooserFileToSave(DataFile dataFile);
+	void chooserFileToSave(DataFile dataFile);
 
 }
