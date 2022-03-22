@@ -54,6 +54,16 @@ public class FileWorker {
 		return false;
 	}
 
+	public void deleteFile(String fileName){
+		System.out.println("DELETING FILE	");
+		File file
+				= new File(URL_FOLDER + "/" + fileName);
+
+		if (file.exists()) {
+			file.delete();
+		}
+	}
+
 	public boolean checkFile(String fileNameReceived) {
 		// TODO Auto-generated method stub
 		File file = new File(URL_FOLDER);

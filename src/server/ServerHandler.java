@@ -111,7 +111,11 @@ public class ServerHandler extends Thread {
 		} else if (str.contains("DOWNLOAD_FILE")) {
 			String[] array = str.split("--");
 			sendFile(array[1]);
-		} else if (str.contains("START_SEND_FILE")) {
+		}else if (str.contains("DELETE_FILE")) {
+			String[] array = str.split("--");
+			fileWorker.deleteFile(array[1]);
+		}
+		else if (str.contains("START_SEND_FILE")) {
 			this.sendType = SEND_TYPE.START_SEND_FILE;
 		} else if (str.contains("SEND_FILE")) {
 			String[] fileInfor = str.split("--");
