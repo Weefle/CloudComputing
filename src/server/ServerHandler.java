@@ -68,7 +68,7 @@ public class ServerHandler extends Thread {
 	void readData() throws Exception {
 		try {
 
-			System.out.println("Receiving...");
+			//System.out.println("Receiving...");
 			ObjectInputStream ois = new ObjectInputStream(is);
 			Object obj = ois.readObject();
 
@@ -134,7 +134,7 @@ public class ServerHandler extends Thread {
 
 	void readFile(Object obj) throws Exception {
 		DataFile dtf = (DataFile) obj;
-		currentSize += 512;
+		currentSize += 1024;
 
 		int percent = (int) (currentSize * 100 / fileSize);
 		m_dtf.appendByte(dtf.data);
@@ -182,7 +182,7 @@ public class ServerHandler extends Thread {
 			InputStream fin = null;
 			long lenghtOfFile = source.length();
 			// Send file : file data
-			byte[] buf = new byte[512];
+			byte[] buf = new byte[1024];
 			long total = 0;
 			int len;
 			try {
