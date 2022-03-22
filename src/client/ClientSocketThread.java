@@ -60,6 +60,7 @@ public class ClientSocketThread extends Thread {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		this.sendString("VIEW_ALL_FILE");
 		while (!isStop) {
 			try {
 				readData();
