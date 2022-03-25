@@ -8,6 +8,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import data.DataFile;
 import data.SEND_TYPE;
 
@@ -93,12 +96,14 @@ public class ServerHandler extends Thread {
 		if (str.equals("STOP"))
 			isStop = true;
 		else if (str.equals("VIEW_ALL_FILE")) {
-			String[] files = fileWorker.getAllFileName();
+			File[] files = fileWorker.getAllFileName();
+			Gson gson = new Gson();
+			String ss = gson.toJson(files, File[].class);
 			String data = "ALL_FILE";
-			for (String file : files) {
-				data += "--" + file;
-			}
-			this.sendString(data);
+			/*for (File file : files) {
+				data += "--" + file.toString();
+			}*/
+			this.sendString(data+ss);
 		} else if (str.contains("SEARCH_FILE")) {
 			String[] searches = str.split("--");
 
@@ -210,12 +215,14 @@ public class ServerHandler extends Thread {
 
 		}
 		sendType = SEND_TYPE.DO_NOT_SEND;
-		String[] files = fileWorker.getAllFileName();
+		File[] files = fileWorker.getAllFileName();
+		Gson gson = new Gson();
+		String ss = gson.toJson(files, File[].class);
 		String data = "ALL_FILE";
-		for (String file : files) {
-			data += "--" + file;
-		}
-		this.sendString(data);
+			/*for (File file : files) {
+				data += "--" + file.toString();
+			}*/
+		this.sendString(data+ss);
 		//sendMessage(data);
 	}
 

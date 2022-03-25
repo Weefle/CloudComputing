@@ -2,9 +2,13 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import data.DataFile;
 import data.SEND_TYPE;
 
@@ -29,7 +33,7 @@ public class ClientSocketThread extends Thread {
 	private String fileNameReceived;
 	private long currentSize;
 	DataFile m_dtf;
-	String[] currentArray;
+	File[] currentArray;
 
 	public ClientSocketThread(ISocketListener iSocketListener) throws Exception {
 		this.iSocketListener = iSocketListener;
@@ -112,12 +116,25 @@ public class ClientSocketThread extends Thread {
 		} else if (str.contains("END_FILE")) {
 			iSocketListener.chooserFileToSave(m_dtf);
 		} else if (str.contains("ALL_FILE")) {
-			String[] listFile = str.split("--");
-			var newArray = Arrays.copyOfRange(listFile, 1, listFile.length);
+			str = str.replace("ALL_FILE", "");
+			Gson gson = new Gson();
+			File[] fis = gson.fromJson(str, File[].class);
+			/*if(!Arrays.equals(currentArray, fis)){
+				currentArray = fis;
+				iSocketListener.updateListFile(currentArray);
+			}*/
+			iSocketListener.updateListFile(fis);
+			/*String[] listFile = str.split("--");
+			List<File> files = new ArrayList<>();
+ 			for(String f : listFile){
+				 files.add(new File(f));
+			}
+			File[] fis = files.stream().toArray(File[]::new);*/
+			/*var newArray = Arrays.copyOfRange(listFile, 1, listFile.length);
 			if(!Arrays.equals(currentArray, newArray)){
 				currentArray = newArray;
 				iSocketListener.updateListFile(currentArray);
-			}
+			}*/
 
 		} else if (str.contains("ERROR")) {
 			String[] list = str.split("--");

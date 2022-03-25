@@ -2,9 +2,11 @@ package client;
 
 import data.DataFile;
 
+import java.io.File;
+
 public interface ISocketListener {
 
-	void updateListFile(String[] listFile);
+	void updateListFile(File[] listFile);
 
 	void setProgress(int n);
 

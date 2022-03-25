@@ -3,17 +3,24 @@ package server;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class FileWorker {
 
 	public static String URL_FOLDER = "C:\\temp";
 
-	String[] getAllFileName() {
-		File file = new File(URL_FOLDER);
-		String[] files = file.list();
+	File[] getAllFileName() {
+		File f = new File(URL_FOLDER);
+		//List<String> fs = new ArrayList<>();
+		//File[] files = f.listFiles();
+		return f.listFiles();
+		/*for(File file : files) {
+			fs.add(file.getAbsolutePath().replace("C:\\temp\\", ""));
+		}
 
-		return files;
+		return fs.stream()
+				.toArray(String[]::new);*/
 	}
 
 	String[] searchFile(String keyword) {
