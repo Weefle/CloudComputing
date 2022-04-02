@@ -8,7 +8,15 @@ import java.util.Scanner;
 
 public class FileWorker {
 
-	public static String URL_FOLDER = "C:\\temp";
+	private String URL_FOLDER;
+
+	public FileWorker(String folder){
+		this.URL_FOLDER = folder;
+	}
+
+	public String getURL_FOLDER(){
+		return this.URL_FOLDER;
+	}
 
 	File[] getAllFileName() {
 		File f = new File(URL_FOLDER);

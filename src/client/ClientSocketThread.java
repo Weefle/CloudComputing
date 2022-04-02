@@ -2,6 +2,9 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import data.DataFile;
 import data.SEND_TYPE;
+import server.FileWorker;
 
 public class ClientSocketThread extends Thread {
 
@@ -19,7 +23,7 @@ public class ClientSocketThread extends Thread {
 
 	// Receive
 	InputStream is;
-	ISocketListener iSocketListener;
+
 
 	// Send
 	OutputStream os;
@@ -28,16 +32,17 @@ public class ClientSocketThread extends Thread {
 	String fileName;
 
 	// Data file
-	DataFile dataFile;
+
+	FileWorker fileWorker;
 	private long fileSize;
 	private String fileNameReceived;
 	private long currentSize;
 	DataFile m_dtf;
 	File[] currentArray;
 
-	public ClientSocketThread(ISocketListener iSocketListener) throws Exception {
-		this.iSocketListener = iSocketListener;
-		m_dtf = new DataFile();
+	public ClientSocketThread() throws Exception {
+		this.fileWorker = new FileWorker("C:\\client");
+				m_dtf = new DataFile();
 	}
 
 	public void setSocket(String serverIp, int port) {
@@ -50,21 +55,21 @@ public class ClientSocketThread extends Thread {
 			os = socket.getOutputStream();
 			is = socket.getInputStream();
 
-			iSocketListener.showDialog("CONNECTED TO SERVER", "INFOR");
+
 			SendDataThread sendDataThread = new SendDataThread();
 			sendDataThread.start();
 		} catch (Exception e) {
 			// TODO: handle exception
 			// clientHelper.connectFail();
 			System.out.println("Can't connect to server");
-			iSocketListener.showDialog("Can't connect to Server", "ERROR");
+			//iSocketListener.showDialog("Can't connect to Server", "ERROR");
 		}
 	}
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		this.sendString("VIEW_ALL_FILE");
+		//this.sendString("VIEW_ALL_FILE");
 		while (!isStop) {
 			try {
 				readData();
@@ -114,16 +119,18 @@ public class ClientSocketThread extends Thread {
 			m_dtf.clear();
 			this.sendString("START_SEND_FILE");
 		} else if (str.contains("END_FILE")) {
-			iSocketListener.chooserFileToSave(m_dtf);
+			m_dtf.saveFile(fileWorker.getURL_FOLDER() + "\\" + fileNameReceived.replace("C:\\temp\\",""));
+			//iSocketListener.chooserFileToSave(m_dtf);
 		} else if (str.contains("ALL_FILE")) {
 			str = str.replace("ALL_FILE", "");
 			Gson gson = new Gson();
 			File[] fis = gson.fromJson(str, File[].class);
-			/*if(!Arrays.equals(currentArray, fis)){
+			//iSocketListener.updateListFile(fis);
+			if (!Arrays.equals(currentArray, fis)) {
 				currentArray = fis;
-				iSocketListener.updateListFile(currentArray);
-			}*/
-			iSocketListener.updateListFile(fis);
+
+			}
+			//iSocketListener.updateListFile(fis);
 			/*String[] listFile = str.split("--");
 			List<File> files = new ArrayList<>();
  			for(String f : listFile){
@@ -135,21 +142,30 @@ public class ClientSocketThread extends Thread {
 				currentArray = newArray;
 				iSocketListener.updateListFile(currentArray);
 			}*/
-
-		} else if (str.contains("ERROR")) {
+		}else if (str.contains("DELETE_FILE")) {
+				str = str.replace("DELETE_FILE", "");
+				Gson gson = new Gson();
+				File fis = gson.fromJson(str, File.class);
+				//String[] array = str.split("--");
+				fileWorker.deleteFile(fis.getName());
+			}
+			/*else if (str.contains("ERROR")) {
 			String[] list = str.split("--");
 			iSocketListener.showDialog(list[1], "ERROR");
-		}
+		}*/
 	}
 
-	void readFile(Object obj) throws Exception {
-		DataFile dtf = (DataFile) obj;
+	void readFile(Object obj) {
+		/*DataFile dtf = (DataFile) obj;
 		currentSize += 1024;
 
 		int percent = (int) (currentSize * 100 / fileSize);
-		// System.out.println(currentSize + " : " + fileSize);
 		m_dtf.appendByte(dtf.data);
-		iSocketListener.setProgress(percent);
+		iSocketListener.setProgress(percent);*/
+		DataFile dtf = (DataFile) obj;
+		int percent = (int) (fileSize);
+		m_dtf.data = dtf.data;
+
 	}
 
 	class SendDataThread extends Thread {
@@ -163,13 +179,18 @@ public class ClientSocketThread extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (sendType != SEND_TYPE.DO_NOT_SEND)
-					sendData();
+				if (sendType != SEND_TYPE.DO_NOT_SEND) {
+					try {
+						sendData();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 
-	private void sendData() {
+	private void sendData() throws IOException {
 		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
@@ -188,11 +209,10 @@ public class ClientSocketThread extends Thread {
 				e.printStackTrace();
 			}
 		} else if (sendType == SEND_TYPE.START_SEND_FILE) {
-			File source = new File(fileName);
-			InputStream fin = null;
+			/*File source = new File(fileName);
+			InputStream fin;
 			long lenghtOfFile = source.length();
-			// Send file : file data
-			byte[] buf = new byte[1024];
+			byte[] buf = new byte[512];
 			long total = 0;
 			int len;
 			try {
@@ -205,10 +225,19 @@ public class ClientSocketThread extends Thread {
 					iSocketListener.setProgress((int) (total * 100 / lenghtOfFile));
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// Send End File: fileName + size
+			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);*/
+			File myFile = new File(fileName);
+			Path path = Paths.get(myFile.getPath());
+
+			long lenghtOfFile = myFile.length();
+
+			DataFile dtf = new DataFile();
+			dtf.data = Files.readAllBytes(path);
+			sendMessage(dtf);
+
+
 			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);
 
 		}
@@ -250,7 +279,7 @@ public class ClientSocketThread extends Thread {
 
 	private void connectServerFail() {
 		// TODO Auto-generated method stub
-		iSocketListener.showDialog("Can't connect to Server", "ERROR");
+		//iSocketListener.showDialog("Can't connect to Server", "ERROR");
 		isStop = true;
 		closeSocket();
 	}
@@ -267,7 +296,7 @@ public class ClientSocketThread extends Thread {
 			if (socket != null)
 				socket.close();
 
-			iSocketListener.showDialog("Closed socket", "INFOR");
+
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

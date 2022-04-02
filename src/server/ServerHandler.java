@@ -1,12 +1,11 @@
 package server;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,6 +33,7 @@ public class ServerHandler extends Thread {
 	private String fileNameReceived;
 	private long currentSize;
 	DataFile m_dtf;
+	File[] files;
 
 	public ServerHandler(Socket socket, ISocketServerListener iSocketServerListener) throws Exception {
 		this.socket = socket;
@@ -41,7 +41,7 @@ public class ServerHandler extends Thread {
 		is = socket.getInputStream();
 
 		this.iSocketServerListener = iSocketServerListener;
-		fileWorker = new FileWorker();
+		this.fileWorker = new FileWorker("C:\\temp");
 		SendDataThread sendDataThread = new SendDataThread();
 		sendDataThread.start();
 
@@ -96,14 +96,19 @@ public class ServerHandler extends Thread {
 		if (str.equals("STOP"))
 			isStop = true;
 		else if (str.equals("VIEW_ALL_FILE")) {
-			File[] files = fileWorker.getAllFileName();
+			File[] fis = fileWorker.getAllFileName();
 			Gson gson = new Gson();
-			String ss = gson.toJson(files, File[].class);
+			String ss = gson.toJson(fis, File[].class);
 			String data = "ALL_FILE";
+			this.sendString(data+ss);
 			/*for (File file : files) {
 				data += "--" + file.toString();
 			}*/
-			this.sendString(data+ss);
+			/*if(!Arrays.equals(files, fis)){
+				files = fis;
+				this.sendString(data+ss);
+			}*/
+
 		} else if (str.contains("SEARCH_FILE")) {
 			String[] searches = str.split("--");
 
@@ -117,8 +122,11 @@ public class ServerHandler extends Thread {
 			String[] array = str.split("--");
 			sendFile(array[1]);
 		}else if (str.contains("DELETE_FILE")) {
-			String[] array = str.split("--");
-			fileWorker.deleteFile(array[1]);
+			str = str.replace("DELETE_FILE", "");
+			Gson gson = new Gson();
+			File fis = gson.fromJson(str, File.class);
+			//String[] array = str.split("--");
+			fileWorker.deleteFile(fis.getName());
 		}
 		else if (str.contains("START_SEND_FILE")) {
 			this.sendType = SEND_TYPE.START_SEND_FILE;
@@ -132,22 +140,26 @@ public class ServerHandler extends Thread {
 			m_dtf.clear();
 			if (fileWorker.checkFile(fileNameReceived))
 				this.sendString("START_SEND_FILE");
-			else
-				this.sendString("ERROR--FILE");
+			/*else
+				this.sendString("ERROR--FILE");*/
 		} else if (str.contains("END_FILE")) {
-			m_dtf.saveFile(FileWorker.URL_FOLDER + "\\" + fileNameReceived);
+			m_dtf.saveFile(fileWorker.getURL_FOLDER() + "\\" + fileNameReceived);
 		}
 
 		return str;
 	}
 
-	void readFile(Object obj) throws Exception {
+	void readFile(Object obj) {
 		DataFile dtf = (DataFile) obj;
+		int percent = (int) (fileSize);
+		m_dtf.data = dtf.data;
+		iSocketServerListener.showProgessBarPercent(percent);
+		/*DataFile dtf = (DataFile) obj;
 		currentSize += 1024;
 
 		int percent = (int) (currentSize * 100 / fileSize);
 		m_dtf.appendByte(dtf.data);
-		iSocketServerListener.showProgessBarPercent(percent);
+		iSocketServerListener.showProgessBarPercent(percent);*/
 	}
 
 	class SendDataThread extends Thread {
@@ -161,18 +173,23 @@ public class ServerHandler extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				if (sendType != SEND_TYPE.DO_NOT_SEND)
-					sendData();
+				if (sendType != SEND_TYPE.DO_NOT_SEND) {
+					try {
+						sendData();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	}
 
-	private void sendData() {
+	private void sendData() throws IOException {
 		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
 		} else if (sendType == SEND_TYPE.SEND_FILE) {
-			File source = new File(FileWorker.URL_FOLDER + "\\" + fileName);
+			File source = new File(fileName);
 			InputStream fin;
 			try {
 				fin = new FileInputStream(source);
@@ -187,10 +204,9 @@ public class ServerHandler extends Thread {
 			}
 
 		} else if (sendType == SEND_TYPE.START_SEND_FILE) {
-			File source = new File(FileWorker.URL_FOLDER + "\\" + fileName);
-			InputStream fin = null;
+			/*File source = new File(FileWorker.URL_FOLDER + "\\" + fileName);
+			InputStream fin;
 			long lenghtOfFile = source.length();
-			// Send file : file data
 			byte[] buf = new byte[1024];
 			long total = 0;
 			int len;
@@ -202,28 +218,30 @@ public class ServerHandler extends Thread {
 					dtf.data = buf;
 					sendMessage(dtf);
 					iSocketServerListener.showProgessBarPercent(total * 100 / lenghtOfFile);
-					// iSocketServerListener.showDialog("File send " + total * 100 / lenghtOfFile,
-					// "INFOR");
 				}
-
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// Send End File: fileName + size
+			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);*/
+			File myFile = new File(fileName);
+			Path path = Paths.get(myFile.getPath());
+
+			long lenghtOfFile = myFile.length();
+
+			DataFile dtf = new DataFile();
+			dtf.data = Files.readAllBytes(path);
+			sendMessage(dtf);
+			iSocketServerListener.showProgessBarPercent((int) (lenghtOfFile));
+
 			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);
 
 		}
 		sendType = SEND_TYPE.DO_NOT_SEND;
-		File[] files = fileWorker.getAllFileName();
+		/*File[] fis = fileWorker.getAllFileName();
 		Gson gson = new Gson();
-		String ss = gson.toJson(files, File[].class);
+		String ss = gson.toJson(fis, File[].class);
 		String data = "ALL_FILE";
-			/*for (File file : files) {
-				data += "--" + file.toString();
-			}*/
-		this.sendString(data+ss);
-		//sendMessage(data);
+		this.sendString(data+ss);*/
 	}
 
 	void sendString(String str) {
@@ -280,7 +298,7 @@ public class ServerHandler extends Thread {
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
-			iSocketServerListener.showDialog("Connection Failed", "ERROR");
+			//iSocketServerListener.showDialog("Connection Failed", "ERROR");
 		}
 	}
 

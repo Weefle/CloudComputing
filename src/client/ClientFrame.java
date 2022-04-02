@@ -6,28 +6,45 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import data.DataFile;
 import data.FileBrowser;
+import server.WatchDir;
 
 public class ClientFrame extends JFrame implements ActionListener, ISocketListener {
 	JTextField ipInput, portInput, searchInput;
 	JButton connectButton, disconnectButton, searchButton, downLoadFile, uploadFileButton, deleteFileButton;
 	JProgressBar jb;
 	FileBrowser browser;
-	//JList<String> list;
-	ClientSocketThread clientSocketThread = null;
+	JList<String> list;
+	public static ClientSocketThread clientSocketThread;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					new ClientFrame();
+
+					try {
+						clientSocketThread = new ClientSocketThread();
+						Path dir = Paths.get("C:\\client");
+						new Thread(new WatchDirClient(dir)).start();
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					clientSocketThread.setSocket("127.0.0.1", 10);
+					clientSocketThread.start();
+					//new ClientFrame();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -77,6 +94,12 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		browser.run();
 		browser.tree.setBounds(200, 400, 800, 350);
 		this.add(browser.tree);
+		/*browser.tree.addTreeSelectionListener(new TreeSelectionListener() {
+			public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) browser.tree.getLastSelectedPathComponent();
+				System.out.println(node.getUserObject().toString());
+			}
+		});*/
 		/*list = new JList<>();
 		JScrollPane listScrollPane = new JScrollPane(list);
 		listScrollPane.setBounds(200, 400, 800, 350);
@@ -126,17 +149,6 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource() == connectButton) {
-			String ip = ipInput.getText();
-			String port = portInput.getText();
-			System.out.println(ip + " : " + port);
-			try {
-				clientSocketThread = new ClientSocketThread(this);
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			clientSocketThread.setSocket(ip, Integer.parseInt(port));
-			clientSocketThread.start();
 		} else if (e.getSource() == disconnectButton) {
 			clientSocketThread.closeSocket();
 		} else if (e.getSource() == searchButton) {
@@ -148,7 +160,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 				else
 					clientSocketThread.sendString("SEARCH_FILE" + "--" + search);
 			}
-		/*} else if (e.getSource() == downLoadFile) {
+		} else if (e.getSource() == downLoadFile) {
 			if (list.getSelectedIndex() != -1) {
 				String str = list.getSelectedValue();
 				clientSocketThread.sendString("DOWNLOAD_FILE" + "--" + str);
@@ -157,7 +169,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 			if (list.getSelectedIndex() != -1) {
 				String str = list.getSelectedValue();
 				clientSocketThread.sendString("DELETE_FILE" + "--" + str);
-			}*/
+			}
 		}
 		else if (e.getSource() == uploadFileButton) {
 			JFileChooser fileChooser = new JFileChooser();
@@ -174,9 +186,13 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	@Override
 	public void updateListFile(File[] listFile) {
 		// TODO Auto-generated method stub
-		//list.setListData(listFile);
-		//browser.files = listFile;
-		//browser.run();
+		ArrayList<String> files = new ArrayList<>();
+		for (File file : listFile) {
+			files.add(file.getName());
+		}
+		//list.setListData(files.toArray(new String[files.size()]));
+		/*browser.files = listFile;
+		browser.treeModel.reload();*/
 	}
 
 	@Override
