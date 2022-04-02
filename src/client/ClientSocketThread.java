@@ -117,7 +117,8 @@ public class ClientSocketThread extends Thread {
 			System.out.println("File Size: " + fileSize);
 			currentSize = 0;
 			m_dtf.clear();
-			this.sendString("START_SEND_FILE");
+			if (fileWorker.checkFile(fileNameReceived))
+				this.sendString("START_SEND_FILE");
 		} else if (str.contains("END_FILE")) {
 			m_dtf.saveFile(fileWorker.getURL_FOLDER() + "\\" + fileNameReceived.replace("C:\\temp\\",""));
 			//iSocketListener.chooserFileToSave(m_dtf);
