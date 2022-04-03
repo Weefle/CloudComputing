@@ -28,7 +28,6 @@ public class ServerHandler extends Thread {
 	String message;
 	String fileName;
 
-	FileWorker fileWorker;
 	private long fileSize;
 	private String fileNameReceived;
 	private long currentSize;
@@ -41,7 +40,6 @@ public class ServerHandler extends Thread {
 		is = socket.getInputStream();
 
 		this.iSocketServerListener = iSocketServerListener;
-		this.fileWorker = new FileWorker("C:\\temp");
 		SendDataThread sendDataThread = new SendDataThread();
 		sendDataThread.start();
 
@@ -89,18 +87,18 @@ public class ServerHandler extends Thread {
 		}
 	}
 
-	public String readString(Object obj) {
+	public String readString(Object obj) throws IOException {
 		String str = obj.toString();
 		iSocketServerListener.showDialog(str, "STRING INFOR");
 
 		if (str.equals("STOP"))
 			isStop = true;
 		else if (str.equals("VIEW_ALL_FILE")) {
-			File[] fis = fileWorker.getAllFileName();
+			/*File[] fis = fileWorker.getAllFileName();
 			Gson gson = new Gson();
 			String ss = gson.toJson(fis, File[].class);
 			String data = "ALL_FILE";
-			this.sendString(data+ss);
+			this.sendString(data+ss);*/
 			/*for (File file : files) {
 				data += "--" + file.toString();
 			}*/
@@ -110,40 +108,41 @@ public class ServerHandler extends Thread {
 			}*/
 
 		} else if (str.contains("SEARCH_FILE")) {
-			String[] searches = str.split("--");
+			/*String[] searches = str.split("--");
 
 			String[] files = fileWorker.searchFile(searches[1]);
 			String data = "ALL_FILE";
 			for (String file : files) {
 				data += "--" + file;
 			}
-			this.sendString(data);
+			this.sendString(data);*/
 		} else if (str.contains("DOWNLOAD_FILE")) {
 			String[] array = str.split("--");
 			sendFile(array[1]);
 		}else if (str.contains("DELETE_FILE")) {
 			str = str.replace("DELETE_FILE", "");
-			Gson gson = new Gson();
-			File fis = gson.fromJson(str, File.class);
-			//String[] array = str.split("--");
-			fileWorker.deleteFile(fis.getName());
+			FileWorker.deleteFile(str.replace("C:\\client\\","C:\\temp\\"));
 		}
 		else if (str.contains("START_SEND_FILE")) {
 			this.sendType = SEND_TYPE.START_SEND_FILE;
 		} else if (str.contains("SEND_FILE")) {
 			String[] fileInfor = str.split("--");
 			System.out.println(fileInfor[1]);
-			fileNameReceived = fileWorker.getFileName(fileInfor[1]);
+			fileNameReceived = fileInfor[1].replace("C:\\client\\","C:\\temp\\");
 			fileSize = Integer.parseInt(fileInfor[2]);
 			System.out.println("File Size: " + fileSize);
 			currentSize = 0;
 			m_dtf.clear();
-			if (fileWorker.checkFile(fileNameReceived))
+			if (!new File(fileNameReceived).exists())
 				this.sendString("START_SEND_FILE");
 			/*else
 				this.sendString("ERROR--FILE");*/
 		} else if (str.contains("END_FILE")) {
-			m_dtf.saveFile(fileWorker.getURL_FOLDER() + "\\" + fileNameReceived);
+			m_dtf.saveFile(fileNameReceived);
+		}
+		else if (str.contains("CREATE_FOLDER")) {
+			str = str.replace("CREATE_FOLDER", "");
+			FileWorker.createFolder(str.replace("C:\\client\\","C:\\temp\\"));
 		}
 
 		return str;
@@ -252,8 +251,8 @@ public class ServerHandler extends Thread {
 
 	void sendFile(String fileName) {
 		System.out.println("SENDING FILE	");
-		sendType = SEND_TYPE.SEND_FILE;
 		this.fileName = fileName;
+		sendType = SEND_TYPE.SEND_FILE;
 
 	}
 

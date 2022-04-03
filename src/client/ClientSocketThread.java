@@ -33,7 +33,6 @@ public class ClientSocketThread extends Thread {
 
 	// Data file
 
-	FileWorker fileWorker;
 	private long fileSize;
 	private String fileNameReceived;
 	private long currentSize;
@@ -41,7 +40,7 @@ public class ClientSocketThread extends Thread {
 	File[] currentArray;
 
 	public ClientSocketThread() throws Exception {
-		this.fileWorker = new FileWorker("C:\\client");
+
 				m_dtf = new DataFile();
 	}
 
@@ -85,8 +84,7 @@ public class ClientSocketThread extends Thread {
 	}
 
 	void readData() throws Exception {
-		//try {
-			//System.out.println("Receiving...");
+
 			ObjectInputStream ois = new ObjectInputStream(is);
 			Object obj = ois.readObject();
 
@@ -96,15 +94,9 @@ public class ClientSocketThread extends Thread {
 			} else if (obj instanceof DataFile) {
 				readFile(obj);
 			}
-		/*} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-			connectServerFail();
-			closeSocket();
-		}*/
 	}
 
-	void readString(Object obj) throws Exception {
+	void readString(Object obj) throws IOException {
 		String str = obj.toString();
 		if (str.equals("STOP"))
 			isStop = true;
@@ -112,15 +104,15 @@ public class ClientSocketThread extends Thread {
 			this.sendType = SEND_TYPE.START_SEND_FILE;
 		} else if (str.contains("SEND_FILE")) {
 			String[] fileInfor = str.split("--");
-			fileNameReceived = fileInfor[1];
+			fileNameReceived = fileInfor[1].replace("C:\\temp\\","C:\\client\\");
 			fileSize = Integer.parseInt(fileInfor[2]);
 			System.out.println("File Size: " + fileSize);
 			currentSize = 0;
 			m_dtf.clear();
-			if (fileWorker.checkFile(fileNameReceived))
+			if (!new File(fileNameReceived).exists())
 				this.sendString("START_SEND_FILE");
 		} else if (str.contains("END_FILE")) {
-			m_dtf.saveFile(fileWorker.getURL_FOLDER() + "\\" + fileNameReceived.replace("C:\\temp\\",""));
+			m_dtf.saveFile(fileNameReceived);
 			//iSocketListener.chooserFileToSave(m_dtf);
 		} else if (str.contains("ALL_FILE")) {
 			str = str.replace("ALL_FILE", "");
@@ -145,11 +137,12 @@ public class ClientSocketThread extends Thread {
 			}*/
 		}else if (str.contains("DELETE_FILE")) {
 				str = str.replace("DELETE_FILE", "");
-				Gson gson = new Gson();
-				File fis = gson.fromJson(str, File.class);
-				//String[] array = str.split("--");
-				fileWorker.deleteFile(fis.getName());
+				FileWorker.deleteFile(str.replace("C:\\temp\\","C:\\client\\"));
 			}
+		else if (str.contains("CREATE_FOLDER")) {
+			str = str.replace("CREATE_FOLDER", "");
+			FileWorker.createFolder(str.replace("C:\\temp\\","C:\\client\\"));
+		}
 			/*else if (str.contains("ERROR")) {
 			String[] list = str.split("--");
 			iSocketListener.showDialog(list[1], "ERROR");
@@ -254,8 +247,8 @@ public class ClientSocketThread extends Thread {
 
 	void sendFile(String fileName) {
 		System.out.println("SENDING FILE	");
-		sendType = SEND_TYPE.SEND_FILE;
 		this.fileName = fileName;
+		sendType = SEND_TYPE.SEND_FILE;
 	}
 
 	// void send Message

@@ -117,18 +117,25 @@ public class WatchDirClient implements Runnable {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
                             registerAll(child);
                         }
-                        clientSocketThread.sendFile(child.toString());
+                        if(new File(child.toString()).isDirectory()){
+                            clientSocketThread.sendString("CREATE_FOLDER" + child);
+
+                        }else{
+                            clientSocketThread.sendFile(child.toString());
+                        }
                     } catch (IOException x) {
                         // ignore to keep sample readbale
                     }
                 }else if(kind == ENTRY_DELETE){
-                    File fis = new File(child.toString());
-                    Gson gson = new Gson();
-                    String ss = gson.toJson(fis, File.class);
-                    clientSocketThread.sendString("DELETE_FILE" + ss);
-                }else if(kind == ENTRY_MODIFY){
-                    clientSocketThread.sendFile(child.toString());
-                }
+                    clientSocketThread.sendString("DELETE_FILE" + child);
+                }/*else if(kind == ENTRY_MODIFY){
+                    if(new File(child.toString()).isDirectory()){
+                        clientSocketThread.sendString("CREATE_FOLDER" + child);
+
+                    }else {
+                        clientSocketThread.sendFile(child.toString());
+                    }
+                }*/
             }
 
             // reset key and remove from set if directory no longer accessible

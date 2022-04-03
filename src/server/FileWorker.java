@@ -2,33 +2,23 @@ package server;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
 public class FileWorker {
 
-	private String URL_FOLDER;
-
-	public FileWorker(String folder){
-		this.URL_FOLDER = folder;
-	}
-
-	public String getURL_FOLDER(){
-		return this.URL_FOLDER;
-	}
-
-	File[] getAllFileName() {
+	/*File[] getAllFileName() {
 		File f = new File(URL_FOLDER);
 		//List<String> fs = new ArrayList<>();
 		//File[] files = f.listFiles();
 		return f.listFiles();
-		/*for(File file : files) {
-			fs.add(file.getAbsolutePath().replace("C:\\temp\\", ""));
-		}
 
-		return fs.stream()
-				.toArray(String[]::new);*/
 	}
 
 	String[] searchFile(String keyword) {
@@ -40,8 +30,6 @@ public class FileWorker {
 				fileSearches.add(file1);
 		for (int i = 0; i < fileSearches.size(); i++)
 			System.out.println("File searches : " + fileSearches.get(i));
-//		if (fileSearches.isEmpty())
-//			return null;
 
 		String[] result = new String[fileSearches.size()];
 		result = fileSearches.toArray(result);
@@ -67,19 +55,40 @@ public class FileWorker {
 			// handle this
 		}
 		return false;
-	}
+	}*/
 
-	public void deleteFile(String fileName){
+	public static void deleteFile(String fileName) throws IOException {
 		System.out.println("DELETING FILE	");
 		File file
-				= new File(URL_FOLDER + "/" + fileName);
+				= new File(fileName);
 
 		if (file.exists()) {
-			file.delete();
+			if(file.isDirectory()){
+				deleteDirectoryStream(Paths.get(fileName));
+			}else{
+				file.delete();
+
+			}
 		}
 	}
 
-	public boolean checkFile(String fileNameReceived) {
+	public static void deleteDirectoryStream(Path path) throws IOException {
+		Files.walk(path)
+				.sorted(Comparator.reverseOrder())
+				.map(Path::toFile)
+				.forEach(File::delete);
+	}
+
+	public static void createFolder(String folderName){
+		System.out.println("CREATING FOLDER	");
+		File file
+				= new File(folderName);
+
+			file.mkdir();
+
+	}
+
+	/*public boolean checkFile(String fileNameReceived) {
 		// TODO Auto-generated method stub
 		File file = new File(URL_FOLDER);
 		String[] files = file.list();
@@ -87,9 +96,9 @@ public class FileWorker {
 			if (file1.equals(fileNameReceived))
 				return false;
 		return true;
-	}
+	}*/
 
-	public String getFileName(String str) {
+	/*public String getFileName(String str) {
 		String result = "";
 		int len = str.length();
 		for (int i = len - 1; i > 0; i--)
@@ -99,5 +108,5 @@ public class FileWorker {
 				result += str.charAt(i);
 
 		return null;
-	}
+	}*/
 }
