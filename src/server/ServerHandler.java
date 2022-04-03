@@ -30,9 +30,7 @@ public class ServerHandler extends Thread {
 
 	private long fileSize;
 	private String fileNameReceived;
-	private long currentSize;
 	DataFile m_dtf;
-	File[] files;
 
 	public ServerHandler(Socket socket, ISocketServerListener iSocketServerListener) throws Exception {
 		this.socket = socket;
@@ -131,7 +129,6 @@ public class ServerHandler extends Thread {
 			fileNameReceived = fileInfor[1].replace("C:\\client\\","C:\\temp\\");
 			fileSize = Integer.parseInt(fileInfor[2]);
 			System.out.println("File Size: " + fileSize);
-			currentSize = 0;
 			m_dtf.clear();
 			if (!new File(fileNameReceived).exists())
 				this.sendString("START_SEND_FILE");

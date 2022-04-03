@@ -35,12 +35,12 @@ public class ClientSocketThread extends Thread {
 
 	private long fileSize;
 	private String fileNameReceived;
-	private long currentSize;
 	DataFile m_dtf;
 	File[] currentArray;
+	ISocketListener iSocketListener;
 
-	public ClientSocketThread() throws Exception {
-
+	public ClientSocketThread(ISocketListener iSocketListener) {
+this.iSocketListener = iSocketListener;
 				m_dtf = new DataFile();
 	}
 
@@ -57,6 +57,7 @@ public class ClientSocketThread extends Thread {
 
 			SendDataThread sendDataThread = new SendDataThread();
 			sendDataThread.start();
+			iSocketListener.showDialog("CONNECTED TO SERVER", "INFOR");
 		} catch (Exception e) {
 			// TODO: handle exception
 			// clientHelper.connectFail();
@@ -107,7 +108,6 @@ public class ClientSocketThread extends Thread {
 			fileNameReceived = fileInfor[1].replace("C:\\temp\\","C:\\client\\");
 			fileSize = Integer.parseInt(fileInfor[2]);
 			System.out.println("File Size: " + fileSize);
-			currentSize = 0;
 			m_dtf.clear();
 			if (!new File(fileNameReceived).exists())
 				this.sendString("START_SEND_FILE");

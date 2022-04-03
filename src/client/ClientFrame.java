@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 			public void run() {
 				try {
 
-					try {
+					/*try {
 						clientSocketThread = new ClientSocketThread();
 						Path dir = Paths.get("C:\\client");
 						new Thread(new WatchDirClient(dir)).start();
@@ -43,8 +44,8 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 						e1.printStackTrace();
 					}
 					clientSocketThread.setSocket("127.0.0.1", 10);
-					clientSocketThread.start();
-					//new ClientFrame();
+					clientSocketThread.start();*/
+					new ClientFrame();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -78,7 +79,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		this.add(connectButton);
 
 		// Search Form
-		JLabel searchLabel = new JLabel("Search: ");
+		/*JLabel searchLabel = new JLabel("Search: ");
 		searchInput = new JTextField();
 		searchButton = new JButton("Search");
 		searchLabel.setBounds(700, 100, 75, 25);
@@ -94,19 +95,19 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		browser.run();
 		browser.tree.setBounds(200, 400, 800, 350);
 		this.add(browser.tree);
-		/*browser.tree.addTreeSelectionListener(new TreeSelectionListener() {
+		browser.tree.addTreeSelectionListener(new TreeSelectionListener() {
 			public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) browser.tree.getLastSelectedPathComponent();
 				System.out.println(node.getUserObject().toString());
 			}
-		});*/
+		});
 		/*list = new JList<>();
 		JScrollPane listScrollPane = new JScrollPane(list);
 		listScrollPane.setBounds(200, 400, 800, 350);
 		this.add(listScrollPane);*/
 
 		// JB
-		downLoadFile = new JButton("Download File");
+		/*downLoadFile = new JButton("Download File");
 		downLoadFile.setBounds(700, 250, 150, 25);
 		this.add(downLoadFile);
 
@@ -121,15 +122,15 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		jb.setBounds(700, 300, 100, 25);
 		jb.setValue(0);
 		jb.setStringPainted(true);
-		this.add(jb);
+		this.add(jb);*/
 
 		// Add event
 		connectButton.addActionListener(this);
 		disconnectButton.addActionListener(this);
-		searchButton.addActionListener(this);
+		/*searchButton.addActionListener(this);
 		deleteFileButton.addActionListener(this);
 		downLoadFile.addActionListener(this);
-		uploadFileButton.addActionListener(this);
+		uploadFileButton.addActionListener(this);*/
 
 		// setting Frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -149,8 +150,18 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource() == connectButton) {
+			clientSocketThread = new ClientSocketThread(this);
+			Path dir = Paths.get("C:\\client");
+			try {
+				new Thread(new WatchDirClient(dir)).start();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+			clientSocketThread.setSocket("127.0.0.1", 10);
+		clientSocketThread.start();
 		} else if (e.getSource() == disconnectButton) {
 			clientSocketThread.closeSocket();
+			showDialog("DISCONNECTED FROM SERVER", "INFOR");
 		} else if (e.getSource() == searchButton) {
 			String search = searchInput.getText();
 
@@ -186,13 +197,9 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	@Override
 	public void updateListFile(File[] listFile) {
 		// TODO Auto-generated method stub
-		ArrayList<String> files = new ArrayList<>();
-		for (File file : listFile) {
-			files.add(file.getName());
-		}
+
 		//list.setListData(files.toArray(new String[files.size()]));
-		/*browser.files = listFile;
-		browser.treeModel.reload();*/
+
 	}
 
 	@Override
