@@ -1,54 +1,24 @@
 package client;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import javax.swing.*;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-
-import data.DataFile;
-import data.FileBrowser;
-import server.WatchDir;
 
 public class ClientFrame extends JFrame implements ActionListener, ISocketListener {
-	JTextField ipInput, portInput, searchInput;
-	JButton connectButton, disconnectButton, searchButton, downLoadFile, uploadFileButton, deleteFileButton;
-	JProgressBar jb;
-	FileBrowser browser;
-	JList<String> list;
+	JTextField ipInput, portInput;
+	JButton connectButton, disconnectButton;
 	public static ClientSocketThread clientSocketThread;
 
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				try {
-
-					/*try {
-						clientSocketThread = new ClientSocketThread();
-						Path dir = Paths.get("C:\\client");
-						new Thread(new WatchDirClient(dir)).start();
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					clientSocketThread.setSocket("127.0.0.1", 10);
-					clientSocketThread.start();*/
-					new ClientFrame();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		EventQueue.invokeLater(() -> {
+			try {
+				new ClientFrame();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		});
 	}
@@ -78,59 +48,11 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		this.add(disconnectButton);
 		this.add(connectButton);
 
-		// Search Form
-		/*JLabel searchLabel = new JLabel("Search: ");
-		searchInput = new JTextField();
-		searchButton = new JButton("Search");
-		searchLabel.setBounds(700, 100, 75, 25);
-		searchInput.setBounds(900, 100, 200, 25);
-		searchButton.setBounds(825, 200, 150, 25);
-		this.add(searchButton);
-		this.add(searchInput);
-		this.add(searchLabel);
-
-		// Result List
-
-		browser = new FileBrowser();
-		browser.run();
-		browser.tree.setBounds(200, 400, 800, 350);
-		this.add(browser.tree);
-		browser.tree.addTreeSelectionListener(new TreeSelectionListener() {
-			public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) browser.tree.getLastSelectedPathComponent();
-				System.out.println(node.getUserObject().toString());
-			}
-		});
-		/*list = new JList<>();
-		JScrollPane listScrollPane = new JScrollPane(list);
-		listScrollPane.setBounds(200, 400, 800, 350);
-		this.add(listScrollPane);*/
-
-		// JB
-		/*downLoadFile = new JButton("Download File");
-		downLoadFile.setBounds(700, 250, 150, 25);
-		this.add(downLoadFile);
-
-		deleteFileButton = new JButton("Delete File");
-		deleteFileButton.setBounds(700, 350, 150, 25);
-		this.add(deleteFileButton);
-
-		uploadFileButton = new JButton("Upload File");
-		uploadFileButton.setBounds(900, 250, 150, 25);
-		this.add(uploadFileButton);
-		jb = new JProgressBar(0, 100);
-		jb.setBounds(700, 300, 100, 25);
-		jb.setValue(0);
-		jb.setStringPainted(true);
-		this.add(jb);*/
 
 		// Add event
 		connectButton.addActionListener(this);
 		disconnectButton.addActionListener(this);
-		/*searchButton.addActionListener(this);
-		deleteFileButton.addActionListener(this);
-		downLoadFile.addActionListener(this);
-		uploadFileButton.addActionListener(this);*/
+
 
 		// setting Frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -162,51 +84,10 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		} else if (e.getSource() == disconnectButton) {
 			clientSocketThread.closeSocket();
 			showDialog("DISCONNECTED FROM SERVER", "INFOR");
-		} else if (e.getSource() == searchButton) {
-			String search = searchInput.getText();
-
-			if (clientSocketThread != null) {
-				if (search.isEmpty())
-					clientSocketThread.sendString("VIEW_ALL_FILE");
-				else
-					clientSocketThread.sendString("SEARCH_FILE" + "--" + search);
-			}
-		} else if (e.getSource() == downLoadFile) {
-			if (list.getSelectedIndex() != -1) {
-				String str = list.getSelectedValue();
-				clientSocketThread.sendString("DOWNLOAD_FILE" + "--" + str);
-			}
-		}else if (e.getSource() == deleteFileButton) {
-			if (list.getSelectedIndex() != -1) {
-				String str = list.getSelectedValue();
-				clientSocketThread.sendString("DELETE_FILE" + "--" + str);
-			}
-		}
-		else if (e.getSource() == uploadFileButton) {
-			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-			int returnVal = fileChooser.showOpenDialog(this);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File fileToSave = fileChooser.getSelectedFile();
-				String filePath = fileToSave.getPath();
-				clientSocketThread.sendFile(filePath);
-			}
 		}
 	}
 
-	@Override
-	public void updateListFile(File[] listFile) {
-		// TODO Auto-generated method stub
 
-		//list.setListData(files.toArray(new String[files.size()]));
-
-	}
-
-	@Override
-	public void setProgress(int n) {
-		// TODO Auto-generated method stub
-		jb.setValue(n);
-	}
 
 	@Override
 	public void showDialog(String str, String type) {
@@ -216,22 +97,6 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 			JOptionPane.showMessageDialog(this, str, type, JOptionPane.INFORMATION_MESSAGE);
 	}
 
-	@Override
-	public void chooserFileToSave(DataFile dataFile) {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		int returnVal = fileChooser.showOpenDialog(this);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File fileToSave = fileChooser.getSelectedFile();
-			String filePath = fileToSave.getPath();
-			try {
-				dataFile.saveFile(filePath);
-				JOptionPane.showMessageDialog(null, "File Saved");
-			} catch (Exception e) {
-				JOptionPane.showMessageDialog(null, e);
-			}
-		}
 
-	}
 
 }

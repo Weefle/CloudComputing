@@ -10,28 +10,12 @@ import java.nio.file.Paths;
 public class DataFile implements Serializable {
 
 	public byte[] data;
-	public int size;
+	public String name;
 
-	public void clear() {
-		data = new byte[0];
-		size = 0;
-	}
 
 	public DataFile() {
 		data = new byte[0];
-		size = 0;
-	}
-
-	/*public DataFile(String fileName) throws IOException {
-		File file = new File(fileName);
-		data = Files.readAllBytes(Paths.get(fileName));
-		System.out.println(data);
-	}*/
-
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return size + " : " + data.toString();
+		name = "";
 	}
 
 	public void saveFile(String fileToReceived) {
@@ -44,18 +28,5 @@ public class DataFile implements Serializable {
 			e.printStackTrace();
 		}
 	}
-
-	/*public void appendByte(byte[] array) {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		try {
-			outputStream.write(data);
-			outputStream.write(array);
-			data = outputStream.toByteArray();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}*/
 
 }

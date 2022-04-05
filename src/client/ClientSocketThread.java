@@ -5,13 +5,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import data.DataFile;
 import data.SEND_TYPE;
 import server.FileWorker;
@@ -33,10 +27,7 @@ public class ClientSocketThread extends Thread {
 
 	// Data file
 
-	private long fileSize;
-	private String fileNameReceived;
 	DataFile m_dtf;
-	File[] currentArray;
 	ISocketListener iSocketListener;
 
 	public ClientSocketThread(ISocketListener iSocketListener) {
@@ -60,9 +51,7 @@ this.iSocketListener = iSocketListener;
 			iSocketListener.showDialog("CONNECTED TO SERVER", "INFOR");
 		} catch (Exception e) {
 			// TODO: handle exception
-			// clientHelper.connectFail();
 			System.out.println("Can't connect to server");
-			//iSocketListener.showDialog("Can't connect to Server", "ERROR");
 		}
 	}
 
@@ -73,7 +62,6 @@ this.iSocketListener = iSocketListener;
 		while (!isStop) {
 			try {
 				readData();
-				//sendString("VIEW_ALL_FILE");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				connectServerFail();
@@ -101,41 +89,7 @@ this.iSocketListener = iSocketListener;
 		String str = obj.toString();
 		if (str.equals("STOP"))
 			isStop = true;
-		else if (str.contains("START_SEND_FILE")) {
-			this.sendType = SEND_TYPE.START_SEND_FILE;
-		} else if (str.contains("SEND_FILE")) {
-			String[] fileInfor = str.split("--");
-			fileNameReceived = fileInfor[1].replace("C:\\temp\\","C:\\client\\");
-			fileSize = Integer.parseInt(fileInfor[2]);
-			System.out.println("File Size: " + fileSize);
-			m_dtf.clear();
-			if (!new File(fileNameReceived).exists())
-				this.sendString("START_SEND_FILE");
-		} else if (str.contains("END_FILE")) {
-			m_dtf.saveFile(fileNameReceived);
-			//iSocketListener.chooserFileToSave(m_dtf);
-		} else if (str.contains("ALL_FILE")) {
-			str = str.replace("ALL_FILE", "");
-			Gson gson = new Gson();
-			File[] fis = gson.fromJson(str, File[].class);
-			//iSocketListener.updateListFile(fis);
-			if (!Arrays.equals(currentArray, fis)) {
-				currentArray = fis;
-
-			}
-			//iSocketListener.updateListFile(fis);
-			/*String[] listFile = str.split("--");
-			List<File> files = new ArrayList<>();
- 			for(String f : listFile){
-				 files.add(new File(f));
-			}
-			File[] fis = files.stream().toArray(File[]::new);*/
-			/*var newArray = Arrays.copyOfRange(listFile, 1, listFile.length);
-			if(!Arrays.equals(currentArray, newArray)){
-				currentArray = newArray;
-				iSocketListener.updateListFile(currentArray);
-			}*/
-		}else if (str.contains("DELETE_FILE")) {
+		else if (str.contains("DELETE_FILE")) {
 				str = str.replace("DELETE_FILE", "");
 				FileWorker.deleteFile(str.replace("C:\\temp\\","C:\\client\\"));
 			}
@@ -143,23 +97,13 @@ this.iSocketListener = iSocketListener;
 			str = str.replace("CREATE_FOLDER", "");
 			FileWorker.createFolder(str.replace("C:\\temp\\","C:\\client\\"));
 		}
-			/*else if (str.contains("ERROR")) {
-			String[] list = str.split("--");
-			iSocketListener.showDialog(list[1], "ERROR");
-		}*/
 	}
 
 	void readFile(Object obj) {
-		/*DataFile dtf = (DataFile) obj;
-		currentSize += 1024;
-
-		int percent = (int) (currentSize * 100 / fileSize);
-		m_dtf.appendByte(dtf.data);
-		iSocketListener.setProgress(percent);*/
 		DataFile dtf = (DataFile) obj;
-		int percent = (int) (fileSize);
 		m_dtf.data = dtf.data;
-
+		m_dtf.name = dtf.name.replace("C:\\temp\\","C:\\client\\");
+		m_dtf.saveFile(m_dtf.name);
 	}
 
 	class SendDataThread extends Thread {
@@ -189,50 +133,11 @@ this.iSocketListener = iSocketListener;
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
 		} else if (sendType == SEND_TYPE.SEND_FILE) {
-			File source = new File(fileName);
-			InputStream fin;
-			try {
-				fin = new FileInputStream(source);
-				long lenghtOfFile = source.length();
-				// Send message : fileName + size
-				sendMessage("SEND_FILE" + "--" + fileName + "--" + lenghtOfFile);
-				fin.close();
-
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else if (sendType == SEND_TYPE.START_SEND_FILE) {
-			/*File source = new File(fileName);
-			InputStream fin;
-			long lenghtOfFile = source.length();
-			byte[] buf = new byte[512];
-			long total = 0;
-			int len;
-			try {
-				fin = new FileInputStream(source);
-				while ((len = fin.read(buf)) != -1) {
-					total += len;
-					DataFile dtf = new DataFile();
-					dtf.data = buf;
-					sendMessage(dtf);
-					iSocketListener.setProgress((int) (total * 100 / lenghtOfFile));
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);*/
-			File myFile = new File(fileName);
-			Path path = Paths.get(myFile.getPath());
-
-			long lenghtOfFile = myFile.length();
-
+			Path path = Paths.get(fileName);
 			DataFile dtf = new DataFile();
 			dtf.data = Files.readAllBytes(path);
+			dtf.name = fileName;
 			sendMessage(dtf);
-
-
-			sendMessage("END_FILE--" + fileName + "--" + lenghtOfFile);
 
 		}
 
@@ -273,7 +178,6 @@ this.iSocketListener = iSocketListener;
 
 	private void connectServerFail() {
 		// TODO Auto-generated method stub
-		//iSocketListener.showDialog("Can't connect to Server", "ERROR");
 		isStop = true;
 		closeSocket();
 	}
