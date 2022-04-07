@@ -1,7 +1,9 @@
 package data;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,14 +20,11 @@ public class DataFile implements Serializable {
 		name = "";
 	}
 
-	public void saveFile(String fileToReceived) {
+	public void saveFile(String fileToReceived) throws IOException {
 		// TODO Auto-generated method stub
 		Path path = Paths.get(fileToReceived);
-		try {
+		if(!new File(fileToReceived).exists()) {
 			Files.write(path, data);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 

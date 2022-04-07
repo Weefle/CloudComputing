@@ -1,10 +1,16 @@
 package client;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import data.DataFile;
 import data.SEND_TYPE;
@@ -37,7 +43,6 @@ this.iSocketListener = iSocketListener;
 
 	public void setSocket(String serverIp, int port) {
 		try {
-
 			socket = new Socket(serverIp, port);
 			// Connect to server
 			System.out.println("Connected: " + socket);
@@ -99,7 +104,7 @@ this.iSocketListener = iSocketListener;
 		}
 	}
 
-	void readFile(Object obj) {
+	void readFile(Object obj) throws IOException, FileSystemException {
 		DataFile dtf = (DataFile) obj;
 		m_dtf.data = dtf.data;
 		m_dtf.name = dtf.name.replace("C:\\temp\\","C:\\client\\");
@@ -133,14 +138,15 @@ this.iSocketListener = iSocketListener;
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
 		} else if (sendType == SEND_TYPE.SEND_FILE) {
+
 			Path path = Paths.get(fileName);
 			DataFile dtf = new DataFile();
-			dtf.data = Files.readAllBytes(path);
 			dtf.name = fileName;
+			dtf.data = Files.readAllBytes(path);
+
 			sendMessage(dtf);
 
 		}
-
 		sendType = SEND_TYPE.DO_NOT_SEND;
 	}
 

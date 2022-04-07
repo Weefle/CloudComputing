@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -115,7 +116,7 @@ public class ServerHandler extends Thread {
 		return str;
 	}
 
-	void readFile(Object obj) {
+	void readFile(Object obj) throws IOException, FileSystemException {
 		DataFile dtf = (DataFile) obj;
 		m_dtf.data = dtf.data;
 		m_dtf.name = dtf.name.replace("C:\\client\\","C:\\temp\\");
@@ -154,8 +155,10 @@ public class ServerHandler extends Thread {
 			DataFile dtf = new DataFile();
 			dtf.data = Files.readAllBytes(path);
 			dtf.name = fileName;
-			sendMessage(dtf);
 
+			dtf.data = Files.readAllBytes(path);
+
+			sendMessage(dtf);
 
 		}
 		sendType = SEND_TYPE.DO_NOT_SEND;
