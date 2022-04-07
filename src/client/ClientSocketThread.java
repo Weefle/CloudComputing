@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import data.DataFile;
 import data.SEND_TYPE;
 import server.FileWorker;
+import server.ServerHandler;
 
 public class ClientSocketThread extends Thread {
 
@@ -164,22 +165,7 @@ this.iSocketListener = iSocketListener;
 
 	// void send Message
 	public synchronized void sendMessage(Object obj) {
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream(os);
-			// only send text
-			if (obj instanceof String) {
-				String message = obj.toString();
-				oos.writeObject(message);
-				oos.flush();
-			}
-			// send attach file
-			else if (obj instanceof DataFile) {
-				oos.writeObject(obj);
-				oos.flush();
-			}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		ServerHandler.send(obj, os);
 	}
 
 	private void connectServerFail() {

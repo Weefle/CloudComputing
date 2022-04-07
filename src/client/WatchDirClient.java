@@ -1,6 +1,6 @@
 package client;
 
-import com.google.gson.Gson;
+import server.WatchDir;
 
 import java.nio.file.*;
 
@@ -30,18 +30,7 @@ public class WatchDirClient implements Runnable {
      * Register the given directory with the WatchService
      */
     private void register(Path dir) throws IOException {
-        WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-        if (trace) {
-            Path prev = keys.get(key);
-            if (prev == null) {
-                System.out.format("register: %s\n", dir);
-            } else {
-                if (!dir.equals(prev)) {
-                    System.out.format("update: %s -> %s\n", prev, dir);
-                }
-            }
-        }
-        keys.put(key, dir);
+        WatchDir.createWatchKey(dir, watcher, trace, keys);
     }
 
     /**

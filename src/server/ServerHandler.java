@@ -8,9 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import data.DataFile;
 import data.SEND_TYPE;
 
@@ -180,6 +177,10 @@ public class ServerHandler extends Thread {
 
 	// void send Message
 	public synchronized void sendMessage(Object obj) {
+		send(obj, os);
+	}
+
+	public static void send(Object obj, OutputStream os) {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
 			// only send text
