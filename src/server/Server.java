@@ -13,7 +13,6 @@ public class Server {
 	public static ServerHandler handler;
 
 	public static void main(String[] args) throws IOException {
-		Server server = new Server();
 		ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
 		ServerSocket serverSocket = null;
 		try {
@@ -21,7 +20,6 @@ public class Server {
 			serverSocket = new ServerSocket(SERVER_PORT);
 			Path dir = Paths.get("C:\\temp");
 			new Thread(new WatchDir(dir)).start();
-			//new Thread(new MainWatch()).start();
 			System.out.println("Server started: " + serverSocket);
 			System.out.println("Waiting for a client ...");
 			while (true) {

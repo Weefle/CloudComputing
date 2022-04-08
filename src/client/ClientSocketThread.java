@@ -1,16 +1,12 @@
 package client;
 
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 
 import data.DataFile;
 import data.SEND_TYPE;
@@ -104,9 +100,11 @@ this.iSocketListener = iSocketListener;
 		}
 	}
 
-	void readFile(Object obj) throws IOException, FileSystemException {
+	void readFile(Object obj) throws IOException{
 		DataFile dtf = (DataFile) obj;
 		m_dtf.data = dtf.data;
+		m_dtf.lastTime = dtf.lastTime;
+		m_dtf.size = dtf.size;
 		m_dtf.name = dtf.name.replace("C:\\temp\\","C:\\client\\");
 		m_dtf.saveFile(m_dtf.name);
 	}
@@ -142,6 +140,10 @@ this.iSocketListener = iSocketListener;
 			Path path = Paths.get(fileName);
 			DataFile dtf = new DataFile();
 			dtf.name = fileName;
+			dtf.size = Files.size(path);
+			BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+			dtf.lastTime = new Date(attr.lastModifiedTime().toMillis());
+			while(!Files.isReadable(path));
 			dtf.data = Files.readAllBytes(path);
 
 			sendMessage(dtf);

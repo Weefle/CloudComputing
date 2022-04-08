@@ -1,10 +1,6 @@
 package server;
 
-import com.google.gson.Gson;
-
 import java.nio.file.*;
-
-import static client.ClientFrame.clientSocketThread;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;
 import static server.Server.handler;
@@ -80,7 +76,6 @@ public class WatchDir implements Runnable {
         this.trace = true;
     }
 
-    @Override
     public void run() {
         for (;;) {
 
@@ -132,14 +127,14 @@ public class WatchDir implements Runnable {
                     }
                 }else if(kind == ENTRY_DELETE){
                     handler.sendString("DELETE_FILE" + child);
-                } /*else if(kind == ENTRY_MODIFY){
+                } else if(kind == ENTRY_MODIFY){
                     if(new File(child.toString()).isDirectory()){
                         handler.sendString("CREATE_FOLDER" + child);
 
                     }else{
                         handler.sendFile(child.toString());
                     }
-                }*/
+                }
             }
 
             // reset key and remove from set if directory no longer accessible

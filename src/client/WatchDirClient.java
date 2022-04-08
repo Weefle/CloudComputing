@@ -1,7 +1,5 @@
 package client;
 
-import com.google.gson.Gson;
-
 import java.nio.file.*;
 
 import static client.ClientFrame.clientSocketThread;
@@ -128,14 +126,14 @@ public class WatchDirClient implements Runnable {
                     }
                 }else if(kind == ENTRY_DELETE){
                     clientSocketThread.sendString("DELETE_FILE" + child);
-                }/*else if(kind == ENTRY_MODIFY){
+                }else if(kind == ENTRY_MODIFY){
                     if(new File(child.toString()).isDirectory()){
                         clientSocketThread.sendString("CREATE_FOLDER" + child);
 
                     }else {
                         clientSocketThread.sendFile(child.toString());
                     }
-                }*/
+                }
             }
 
             // reset key and remove from set if directory no longer accessible
