@@ -167,8 +167,22 @@ this.iSocketListener = iSocketListener;
 
 	// void send Message
 	public synchronized void sendMessage(Object obj) {
-		ServerHandler.send(obj, os);
-	}
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			// only send text
+			if (obj instanceof String) {
+				String message = obj.toString();
+				oos.writeObject(message);
+				oos.flush();
+			}
+			// send attach file
+			else if (obj instanceof DataFile) {
+				oos.writeObject(obj);
+				oos.flush();
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}	}
 
 	private void connectServerFail() {
 		// TODO Auto-generated method stub
