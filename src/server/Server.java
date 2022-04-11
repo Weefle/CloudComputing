@@ -7,11 +7,15 @@ import java.nio.file.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+//Déclaration de la classe principale Server
 public class Server {
+
 	public static final int NUM_OF_THREAD = 10;
 	public final static int SERVER_PORT = 10;
+
 	public static ServerHandler handler;
 
+	//Déclaration de la méthode principale du programme Server
 	public static void main(String[] args) throws IOException {
 		ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
 		ServerSocket serverSocket = null;
@@ -35,7 +39,6 @@ public class Server {
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		} finally {
 			if (serverSocket != null) {

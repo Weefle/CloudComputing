@@ -17,7 +17,7 @@ public class WatchDirClient implements Runnable {
 
     private final WatchService watcher;
     private final Map<WatchKey,Path> keys;
-    private boolean trace = false;
+    private boolean trace;
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {

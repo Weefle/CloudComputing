@@ -11,37 +11,35 @@ import java.util.Date;
 import data.DataFile;
 import data.SEND_TYPE;
 import server.FileWorker;
-import server.ServerHandler;
 
+//Déclaration de la classe principale ClientSocketThread
 public class ClientSocketThread extends Thread {
 
 	private Socket socket;
 	private boolean isStop = false;
 
-	// Receive
 	InputStream is;
 
 
-	// Send
 	OutputStream os;
 	SEND_TYPE sendType = SEND_TYPE.DO_NOT_SEND;
 	String message;
 	String fileName;
 
-	// Data file
 
 	DataFile m_dtf;
 	ISocketListener iSocketListener;
 
+	//Déclaration de la méthode d'initialisation de ClientSocketThread
 	public ClientSocketThread(ISocketListener iSocketListener) {
-this.iSocketListener = iSocketListener;
-				m_dtf = new DataFile();
+		this.iSocketListener = iSocketListener;
+		m_dtf = new DataFile();
 	}
 
+	//Déclaration de la méthode d'initialisation du socket avec pour paramètres son ip et son port
 	public void setSocket(String serverIp, int port) {
 		try {
 			socket = new Socket(serverIp, port);
-			// Connect to server
 			System.out.println("Connected: " + socket);
 
 			os = socket.getOutputStream();
@@ -52,20 +50,17 @@ this.iSocketListener = iSocketListener;
 			sendDataThread.start();
 			iSocketListener.showDialog("CONNECTED TO SERVER", "INFOR");
 		} catch (Exception e) {
-			// TODO: handle exception
 			System.out.println("Can't connect to server");
 		}
 	}
 
+	//Méthode runnable de la classe
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		//this.sendString("VIEW_ALL_FILE");
 		while (!isStop) {
 			try {
 				readData();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				connectServerFail();
 				e.printStackTrace();
 				break;
@@ -74,6 +69,7 @@ this.iSocketListener = iSocketListener;
 		closeSocket();
 	}
 
+	//Méthode permettant la lecture des objets reçus en String ou DataFile
 	void readData() throws Exception {
 
 			ObjectInputStream ois = new ObjectInputStream(is);
@@ -87,6 +83,7 @@ this.iSocketListener = iSocketListener;
 			}
 	}
 
+	//Méthode de lecture des messages reçus
 	void readString(Object obj) throws IOException {
 		String str = obj.toString();
 		if (str.equals("STOP"))
@@ -101,6 +98,7 @@ this.iSocketListener = iSocketListener;
 		}
 	}
 
+	//Méthode de lecture des fichiers reçus
 	void readFile(Object obj) throws IOException{
 		DataFile dtf = (DataFile) obj;
 		m_dtf.data = dtf.data;
@@ -110,15 +108,14 @@ this.iSocketListener = iSocketListener;
 		m_dtf.saveFile(m_dtf.name);
 	}
 
+	//Méthode principale du thread du client
 	class SendDataThread extends Thread {
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
 			while (!isStop) {
 				try {
 					Thread.sleep(0);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (sendType != SEND_TYPE.DO_NOT_SEND) {
@@ -132,6 +129,7 @@ this.iSocketListener = iSocketListener;
 		}
 	}
 
+	//Méthode d'envoi des messages String ou des fichiers DataFile
 	private void sendData() throws IOException {
 		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
@@ -153,43 +151,43 @@ this.iSocketListener = iSocketListener;
 		sendType = SEND_TYPE.DO_NOT_SEND;
 	}
 
+	//Méthode d'entête d'envoi des messages
 	void sendString(String str) {
 		System.out.println("SENDING STRING	" + str);
 		sendType = SEND_TYPE.SEND_STRING;
 		message = str;
 	}
 
+	//Méthode d'entête d'envoi des fichiers
 	void sendFile(String fileName) {
 		System.out.println("SENDING FILE	");
 		this.fileName = fileName;
 		sendType = SEND_TYPE.SEND_FILE;
 	}
 
-	// void send Message
+	//Méthode d'envoi des messages et des fichiers DataFile
 	public synchronized void sendMessage(Object obj) {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
-			// only send text
 			if (obj instanceof String) {
 				String message = obj.toString();
 				oos.writeObject(message);
 				oos.flush();
 			}
-			// send attach file
 			else if (obj instanceof DataFile) {
 				oos.writeObject(obj);
 				oos.flush();
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
 		}	}
 
+	//Méthode d'arrêt du socket sur erreur
 	private void connectServerFail() {
-		// TODO Auto-generated method stub
 		isStop = true;
 		closeSocket();
 	}
 
+	//Méthode d'arrêt du socket
 	public void closeSocket() {
 		isStop = true;
 		try {
@@ -204,7 +202,6 @@ this.iSocketListener = iSocketListener;
 
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}

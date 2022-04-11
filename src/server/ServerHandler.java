@@ -2,7 +2,6 @@ package server;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,15 +10,14 @@ import java.util.Date;
 import data.DataFile;
 import data.SEND_TYPE;
 
+//Déclaration de la classe principale de ServerHandler
 public class ServerHandler extends Thread {
 
 	private Socket socket;
 	private boolean isStop = false;
 
-	// Receive
 	InputStream is;
 
-	// SEND
 	OutputStream os;
 	SEND_TYPE sendType = SEND_TYPE.DO_NOT_SEND;
 	String message;
@@ -27,6 +25,7 @@ public class ServerHandler extends Thread {
 
 	DataFile m_dtf;
 
+	//Déclaration de la méthode d'initialisation de ServerHandler
 	public ServerHandler(Socket socket) throws Exception {
 		this.socket = socket;
 		os = socket.getOutputStream();
@@ -38,15 +37,14 @@ public class ServerHandler extends Thread {
 		m_dtf = new DataFile();
 	}
 
+	//Exécution du runnable du thread
 	@Override
 	public void run() {
 		System.out.println("Processing: " + socket);
-		// TODO Auto-generated method stub
 		while (!isStop) {
 			try {
 				readData();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				connectClientFail();
 				e.printStackTrace();
 				break;
@@ -58,6 +56,7 @@ public class ServerHandler extends Thread {
 
 	}
 
+	//Lecture des objets reçus provenant du socket
 	void readData() {
 		try {
 
@@ -71,33 +70,19 @@ public class ServerHandler extends Thread {
 			}
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 			connectClientFail();
 			closeSocket();
 		}
 	}
 
+	//Lecture des messages reçus
 	public String readString(Object obj) throws IOException {
 		String str = obj.toString();
 
 		if (str.equals("STOP"))
 			isStop = true;
-		/*else if (str.equals("VIEW_ALL_FILE")) {
-			File[] fis = fileWorker.getAllFileName();
-			Gson gson = new Gson();
-			String ss = gson.toJson(fis, File[].class);
-			String data = "ALL_FILE";
-			this.sendString(data+ss);
-			for (File file : files) {
-				data += "--" + file.toString();
-			}
-			if(!Arrays.equals(files, fis)){
-				files = fis;
-				this.sendString(data+ss);
-			}
-
-		} */ else if (str.contains("DOWNLOAD_FILE")) {
+		else if (str.contains("DOWNLOAD_FILE")) {
 			String[] array = str.split("--");
 			sendFile(array[1]);
 		}else if (str.contains("DELETE_FILE")) {
@@ -113,7 +98,8 @@ public class ServerHandler extends Thread {
 		return str;
 	}
 
-	void readFile(Object obj) throws IOException, FileSystemException {
+	//Lecture des fichiers reçus
+	void readFile(Object obj) throws IOException {
 		DataFile dtf = (DataFile) obj;
 		m_dtf.data = dtf.data;
 		m_dtf.lastTime = dtf.lastTime;
@@ -122,15 +108,14 @@ public class ServerHandler extends Thread {
 		m_dtf.saveFile(m_dtf.name);
 	}
 
+	//Thread principal du serveur
 	class SendDataThread extends Thread {
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
 			while (!isStop) {
 				try {
 					Thread.sleep(0);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (sendType != SEND_TYPE.DO_NOT_SEND) {
@@ -144,8 +129,8 @@ public class ServerHandler extends Thread {
 		}
 	}
 
+	//Gestion de l'envoi des messages ou des fichiers à travers le socket
 	private void sendData() throws IOException {
-		// TODO Auto-generated method stub
 		if (sendType == SEND_TYPE.SEND_STRING) {
 			sendMessage(message);
 		}  else if (sendType == SEND_TYPE.SEND_FILE) {
@@ -167,12 +152,14 @@ public class ServerHandler extends Thread {
 
 	}
 
+	//Entête d'envoi d'un message
 	void sendString(String str) {
 		System.out.println("SENDING STRING	");
 		sendType = SEND_TYPE.SEND_STRING;
 		message = str;
 	}
 
+	//Entête d'envoi d'un fichier
 	void sendFile(String fileName) {
 		System.out.println("SENDING FILE	");
 		this.fileName = fileName;
@@ -180,32 +167,30 @@ public class ServerHandler extends Thread {
 
 	}
 
-	// void send Message
+	//Fonction d'envoi de message sous forme d'objet String ou DataFile
 	public synchronized void sendMessage(Object obj) {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
-			// only send text
 			if (obj instanceof String) {
 				String message = obj.toString();
 				oos.writeObject(message);
 				oos.flush();
 			}
-			// send attach file
 			else if (obj instanceof DataFile) {
 				oos.writeObject(obj);
 				oos.flush();
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 	}
 
+	//Arrêt sur erreur socket
 	private void connectClientFail() {
-		// TODO Auto-generated method stub
 		isStop = true;
 		closeSocket();
 	}
 
+	//Arrêt du socket
 	private void closeSocket() {
 		isStop = true;
 		try {
@@ -218,7 +203,6 @@ public class ServerHandler extends Thread {
 				socket.close();
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}

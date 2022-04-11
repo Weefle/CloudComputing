@@ -8,11 +8,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+//Déclaration de la classe ClientFrame de notre fen^tre d'affichage
 public class ClientFrame extends JFrame implements ActionListener, ISocketListener {
 	JTextField ipInput, portInput;
 	JButton connectButton, disconnectButton;
 	public static ClientSocketThread clientSocketThread;
 
+	//Méthode principale de notre fenêtre
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
 			try {
@@ -27,7 +29,8 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	 * Create the frame.
 	 */
 	public ClientFrame() {
-		// Connect Sever Form
+
+		//Formulaire de connexion au serveur
 		JLabel ipLabel = new JLabel("IP: ");
 		ipInput = new JTextField("127.0.0.1");
 		ipLabel.setBounds(100, 100, 150, 25);
@@ -41,6 +44,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		this.add(portLabel);
 		this.add(portInput);
 
+		//Bouton de connexion et déconnexion
 		connectButton = new JButton("Connect");
 		disconnectButton = new JButton("Disconnect");
 		connectButton.setBounds(125, 200, 150, 25);
@@ -49,12 +53,12 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		this.add(connectButton);
 
 
-		// Add event
+		//Ajout des evenements
 		connectButton.addActionListener(this);
 		disconnectButton.addActionListener(this);
 
 
-		// setting Frame
+		//Définition de notre fenêtre
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setTitle("Client Frame");
 		this.setLocationRelativeTo(null);
@@ -63,14 +67,9 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 		this.setVisible(true);
 	}
 
-	/*private int getRow(Point point)
-	{
-		return list.locationToIndex(point);
-	}*/
-
+	//Méthode permettant la récupération des evenements ayant lieu dans notre fenêtre
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
 		if (e.getSource() == connectButton) {
 			clientSocketThread = new ClientSocketThread(this);
 			Path dir = Paths.get("C:\\client");
@@ -88,7 +87,7 @@ public class ClientFrame extends JFrame implements ActionListener, ISocketListen
 	}
 
 
-
+//Méthode d'affichage de la boîte de dialogue informative
 	@Override
 	public void showDialog(String str, String type) {
 		if (type.equals("ERROR"))

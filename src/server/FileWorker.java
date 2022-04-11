@@ -9,17 +9,7 @@ import java.util.Comparator;
 
 public class FileWorker {
 
-	public static void saveFile(String fileToReceived, byte[] data) {
-		// TODO Auto-generated method stub
-		Path path = Paths.get(fileToReceived);
-		try {
-			Files.write(path, data);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
+	//Méthode pour supprimer un fichier ou un dossier
 	public static void deleteFile(String fileName) throws IOException {
 		System.out.println("DELETING FILE	");
 		File file
@@ -35,6 +25,7 @@ public class FileWorker {
 		}
 	}
 
+	//Méthode permettant la suppression récursive d'un dossier
 	public static void deleteDirectoryStream(Path path) throws IOException {
 		Files.walk(path)
 				.sorted(Comparator.reverseOrder())
@@ -42,6 +33,7 @@ public class FileWorker {
 				.forEach(File::delete);
 	}
 
+	//Méthode pour la création d'un dossier
 	public static void createFolder(String folderName){
 		System.out.println("CREATING FOLDER	");
 		File file

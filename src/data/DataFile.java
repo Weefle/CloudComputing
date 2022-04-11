@@ -6,9 +6,9 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
+//Déclaration de la classe DataFile pour avoir un objet qui va définir notre fichier à envoyer
 public class DataFile implements Serializable {
 
 	public byte[] data;
@@ -16,7 +16,7 @@ public class DataFile implements Serializable {
 	public String name;
 	public long size;
 
-
+//Déclaration de la méthode d'initialisation de DataFile
 	public DataFile() {
 		data = new byte[0];
 		lastTime = new Date();
@@ -24,8 +24,8 @@ public class DataFile implements Serializable {
 		name = "";
 	}
 
+	//Déclaration de la méthode SaveFile permettant la sauvegarde du fichier vers la destination indiquée
 	public void saveFile(String fileToReceived) throws IOException {
-		// TODO Auto-generated method stub
 		Path path = Paths.get(fileToReceived);
 
 		if(!Files.exists(path)){
